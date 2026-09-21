@@ -121,7 +121,7 @@ export function App() {
   }
 
   if (completed) {
-    return <ResultScreen questions={questions} answers={answers} score={score} onRestart={restart} onHome={goHome} />;
+    return <ResultScreen questions={questions} answers={answers} score={score} onHome={goHome} />;
   }
 
   return (

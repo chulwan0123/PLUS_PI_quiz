@@ -9,8 +9,16 @@ const levelMessages = [
   '우리 아이 자산을 준비할 지식이 탄탄해요!',
   '당신은 진정한 파이 마스터예요!',
 ];
+const scoreCharacters = {
+  0: '/assets/pi-suri-score-00.png',
+  1: '/assets/pi-suri-score-00.png',
+  2: '/assets/pi-suri-score-02.png',
+  3: '/assets/pi-suri-score-00.png',
+  4: '/assets/pi-suri-score-00.png',
+  5: '/assets/pi-suri-score-00.png',
+};
 
-export default function ResultScreen({ questions, answers, score, onRestart, onHome }) {
+export default function ResultScreen({ questions, answers, score, onHome }) {
   const dialog = useRef(null);
   const level = levels[score];
   return (
@@ -26,7 +34,9 @@ export default function ResultScreen({ questions, answers, score, onRestart, onH
           <header className="result-hero">
             <p className="result-eyebrow">나의 파이 레벨</p>
             <h1><span>{score}점</span><br />{level}</h1>
-            <div className="result-character-slot" role="img" aria-label="수리 캐릭터가 들어갈 자리"><span>수리 캐릭터</span></div>
+            <div className="result-character-slot">
+              <img src={scoreCharacters[score] || '/assets/pi-suri-no-coin.svg'} alt={`${score}점 수리 캐릭터`} draggable="false" />
+            </div>
             <p className="result-message">{levelMessages[score]}</p>
           </header>
           <section className="result-answers" aria-label="전체 5문제 정답과 해설">
@@ -52,7 +62,7 @@ export default function ResultScreen({ questions, answers, score, onRestart, onH
         </div>
         <footer className="result-action-bar">
           <button className="result-install" onClick={() => dialog.current.showModal()}>파이 앱 시작해보기</button>
-          <button className="result-retry" onClick={onRestart}>퀴즈 다시 풀기</button>
+          <button className="result-retry" onClick={onHome}>퀴즈 다시 풀기</button>
         </footer>
         <dialog ref={dialog} className="install-dialog" aria-labelledby="install-title" onClick={event => { if (event.target === dialog.current) dialog.current.close(); }}>
           <button className="install-close" aria-label="설치 안내 닫기" onClick={() => dialog.current.close()}>×</button>

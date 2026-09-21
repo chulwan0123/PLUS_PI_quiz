@@ -15,6 +15,8 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Use the color tokens and supplied assets from `/Users/hanwha/Documents/GitHub/plus-design-system`.
 - This prototype has no audio, analytics, backend, database, or personal-data collection.
 - Home features the original character extracted from `PI 수리.ai`, holding viewer-left O and viewer-right X signs with alternating silent animation. Preserve the supplied character's original colors.
+- Result levels use the same original Suri body extracted from `PI 수리.ai` without the O/X sign layers.
+- Result score 2 uses `pi-suri-score-02.png`; scores 0, 1, 3, 4, and 5 currently share `pi-suri-score-00.png` until dedicated variants are supplied.
 - Suri blinks naturally on the home screen with an occasional quick double blink, offset from the paddle motion.
 - The home start button uses the same 90.47% width and 4.765% side inset as the quiz question card; its height is 80% of an O/X answer button.
 - The `시작하기` label uses 80% of the home `OX퀴즈` title's font-size ratio.

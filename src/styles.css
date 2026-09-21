@@ -7,6 +7,14 @@
 }
 
 @font-face {
+  font-family: 'LIFEPLUS';
+  src: url('/fonts/lifeplus-medium.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'Pretendard';
   src: url('/fonts/pretendard-medium.subset.woff2') format('woff2');
   font-style: normal;
@@ -118,7 +126,7 @@ button { font: inherit; }
 .home-tagline-top { animation-delay: .12s; }
 .home-tagline-bottom { animation-delay: .55s; }
 .home-tagline-top img { animation: tagline-float-top 4.2s ease-in-out 1.05s infinite; }
-.home-tagline-bottom img { animation: tagline-float-top 4.2s ease-in-out 1.05s infinite; }
+.home-tagline-bottom img { animation: tagline-float-top 4.2s ease-in-out 1.55s infinite; }
 
 @keyframes tagline-reveal {
   from { opacity: 0; transform: translateY(35%) scale(.97); clip-path: inset(100% 0 0 0); }
@@ -607,11 +615,12 @@ button { font: inherit; }
 .result-page { background: var(--color-white); display: flex; flex-direction: column; }
 .result-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
 .result-hero { padding: 10% 6% 16%; text-align: center; }
-.result-eyebrow { margin: 0 0 0.7em; font-size: calc(var(--canvas-width) * .04); color: var(--color-orange-700); }
+.result-eyebrow { margin: 0 0 0.7em; font-size: calc(var(--canvas-width) * .04); color: var(--color-orange-600); }
 .result-hero h1 { margin: 0; font-size: calc(var(--canvas-width) * .08); line-height: 1.25; letter-spacing: -.05em; }
 .result-hero h1 span { color: var(--color-orange-600); }
-.result-character-slot { display: grid; place-items: center; width: 60%; aspect-ratio: 1; margin: 7% auto; border-radius: calc(var(--canvas-width) * .035); background: var(--color-gray-200); font-size: calc(var(--canvas-width) * .035); }
-.result-message { margin: 0; font-size: calc(var(--canvas-width) * .042); line-height: 1.5; word-break: keep-all; }
+.result-character-slot { display: grid; place-items: center; width: 60%; aspect-ratio: 1; margin: 7% auto; background: transparent; }
+.result-character-slot img { display: block; width: 88%; height: auto; }
+.result-message { margin: 0; font-family: 'LIFEPLUS', 'Pretendard', sans-serif; font-size: calc(var(--canvas-width) * .042); font-weight: 500; line-height: 1.5; word-break: keep-all; }
 .result-brand-row { margin-top: calc(var(--canvas-width) * .057); }
 .result-home-button { display: grid; place-items: center; width: calc(var(--canvas-width) * .12); height: 100%; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .result-home-button img { width: 100% !important; height: 68% !important; }
