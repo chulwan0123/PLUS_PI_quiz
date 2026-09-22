@@ -242,7 +242,9 @@ button { font: inherit; }
   border-radius: 300px;
   color: var(--color-orange-600);
   background: var(--color-white);
+  font-family: 'LIFEPLUS', 'Pretendard', sans-serif;
   font-size: calc(var(--canvas-width) * 0.037);
+  font-weight: 700;
   line-height: 1;
   transform: translateX(-50%);
 }
@@ -299,6 +301,7 @@ button { font: inherit; }
 
 .back-button:focus-visible,
 .choice-button:focus-visible,
+.hint-button:focus-visible,
 .restart-button:focus-visible {
   outline: calc(var(--canvas-width) * 0.004) solid var(--color-orange-600);
   outline-offset: calc(var(--canvas-width) * 0.004);
@@ -416,7 +419,7 @@ button { font: inherit; }
 }
 
 .ox-choices {
-  top: 64.7%;
+  top: 62.5%;
 }
 
 .ox-button {
@@ -425,6 +428,29 @@ button { font: inherit; }
   font-size: calc(var(--canvas-width) * 0.128);
   line-height: 0.8;
 }
+
+.hint-button {
+  position: absolute;
+  z-index: 3;
+  top: 78%;
+  left: 50%;
+  display: inline-grid;
+  grid-template-columns: 1em auto 1em;
+  align-items: center;
+  gap: .35em;
+  padding: .52em .8em;
+  border: 0;
+  color: var(--color-gray-900);
+  background: transparent;
+  font-family: 'LIFEPLUS', 'Pretendard', sans-serif;
+  font-size: calc(var(--canvas-width) * .044);
+  font-weight: 700;
+  cursor: pointer;
+  transform: translateX(-50%);
+}
+
+.hint-button::before { width: 1em; height: 1em; content: ''; }
+.hint-chevron { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
 .restart-button {
   min-height: calc(var(--canvas-width) * 0.088);
@@ -632,7 +658,7 @@ button { font: inherit; }
 .result-answers ol { list-style: none; padding: 0; margin: 0; }
 .result-answers li { padding: 6%; border-radius: calc(var(--canvas-width) * .035); background: var(--color-white); margin-bottom: 5%; }
 .result-question-meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: calc(var(--canvas-width) * .037); }
-.result-question-number { display: grid; flex: 0 0 auto; place-items: center; width: max-content; padding: .65em 1em; border: calc(var(--canvas-width) * .004) solid var(--color-orange-600); border-radius: 300px; color: var(--color-orange-600); background: var(--color-white); line-height: 1; }
+.result-question-number { display: grid; flex: 0 0 auto; place-items: center; width: max-content; padding: .65em 1em; border: calc(var(--canvas-width) * .004) solid var(--color-orange-600); border-radius: 300px; color: var(--color-orange-600); background: var(--color-white); font-family: 'LIFEPLUS', 'Pretendard', sans-serif; font-weight: 700; line-height: 1; }
 .result-status-mark { flex: 0 0 calc(var(--canvas-width) * .14); width: calc(var(--canvas-width) * .14); aspect-ratio: 1; background-image: url('/assets/result-crayon-ox.png'); background-repeat: no-repeat; background-size: 200% 100%; }
 .result-status-mark.is-correct { background-position: left center; }
 .result-status-mark.is-incorrect { background-position: right center; }
@@ -652,6 +678,7 @@ button { font: inherit; }
 .install-dialog::backdrop { background: rgba(0,0,0,.6); }
 .install-close { display: block; margin: 0 0 0 auto; width: max(48px, calc(var(--canvas-width) * .09)); height: max(48px, calc(var(--canvas-width) * .09)); border: 0; border-radius: calc(var(--canvas-width) * .02); font-size: 36px; color: var(--color-gray-900); background: var(--color-gray-100); cursor: pointer; }
 .install-dialog h2 { font-size: calc(var(--canvas-width) * .062); margin: .5em 0; }
+.hint-dialog h2 { margin: calc(var(--canvas-width) * .07) 0 calc(var(--canvas-width) * .11); }
 .install-qr-placeholder { width: 75%; aspect-ratio: 1; margin: 8% auto; border-radius: 16px; background: var(--color-gray-100); display: flex; flex-direction: column; justify-content: center; gap: .4em; font-size: calc(var(--canvas-width) * .045); }
 .install-qr-placeholder strong { font-size: calc(var(--canvas-width) * .1); }
 .install-dialog > p:not(.result-eyebrow) { font-family: 'Pretendard', sans-serif; font-size: calc(var(--canvas-width) * .04); line-height: 1.6; }
