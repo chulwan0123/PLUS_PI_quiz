@@ -81,6 +81,14 @@ export function App() {
   const transitionTimer = useRef(null);
   const hintDialog = useRef(null);
 
+  const openHint = () => {
+    const dialog = hintDialog.current;
+    if (!dialog) return;
+    const scrollArea = dialog.querySelector('.hint-dialog-scroll');
+    if (scrollArea) scrollArea.scrollTop = 0;
+    dialog.showModal();
+  };
+
   const question = quizQuestions[questionIndex];
   const selected = answers[questionIndex];
   const progress = (questionIndex / quizQuestions.length) * 100;
@@ -265,7 +273,7 @@ export function App() {
         </div>
 
         {question.hintEnabled && (
-          <button className="hint-button" type="button" onClick={() => hintDialog.current?.showModal()}>
+          <button className="hint-button" type="button" onClick={openHint}>
             <span>힌트보기</span>
             <svg className="hint-chevron" viewBox="0 0 24 24" aria-hidden="true">
               <path d="m9 5 7 7-7 7" />
