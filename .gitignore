@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .vercel/
+supabase/.temp/
 .DS_Store
 /*.png
 npm-debug.log*

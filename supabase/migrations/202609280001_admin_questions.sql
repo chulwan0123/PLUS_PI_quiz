@@ -6,6 +6,7 @@ create table if not exists public.questions (
   display_lines text[] not null check (cardinality(display_lines) between 1 and 3),
   correct_answer boolean not null,
   explanation text not null check (length(trim(explanation)) > 0),
+  hint_enabled boolean not null default false,
   hint_text text not null default '',
   hint_image_url text,
   hint_image_path text,

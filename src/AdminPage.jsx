@@ -6,6 +6,7 @@ const emptyQuestion = {
   display_lines: ['', '', ''],
   correct_answer: true,
   explanation: '',
+  hint_enabled: false,
   hint_text: '',
   hint_image_url: '',
   hint_image_path: '',
@@ -14,12 +15,17 @@ const emptyQuestion = {
 };
 
 function normalizeQuestion(question) {
+  const displayLines = Array.isArray(question.display_lines)
+    ? question.display_lines.map((line) => line.trim()).filter(Boolean)
+    : [];
+
   return {
     ...emptyQuestion,
     ...question,
-    display_lines: Array.isArray(question.display_lines)
-      ? [...question.display_lines, '', '', ''].slice(0, 3)
-      : ['', '', ''],
+    question_text: displayLines.length > 0
+      ? displayLines.join('\n')
+      : question.question_text ?? '',
+    display_lines: displayLines,
   };
 }
 
@@ -98,13 +104,6 @@ export default function AdminPage() {
     setEditor((current) => ({ ...current, [key]: value }));
   };
 
-  const updateLine = (index, value) => {
-    setEditor((current) => ({
-      ...current,
-      display_lines: current.display_lines.map((line, lineIndex) => lineIndex === index ? value : line),
-    }));
-  };
-
   const uploadHintImage = async (file) => {
     if (!file || !editor) return;
     if (!file.type.startsWith('image/')) {
@@ -144,10 +143,10 @@ export default function AdminPage() {
     event.preventDefault();
     if (!editor) return;
 
-    const lines = editor.display_lines.map((line) => line.trim()).filter(Boolean);
-    const questionText = editor.question_text.trim() || lines.join(' ');
+    const lines = editor.question_text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const questionText = lines.join(' ');
     if (!questionText || lines.length === 0 || !editor.explanation.trim()) {
-      setMessage('문제 문구, 화면 문장, 정답 해설을 모두 입력해 주세요.');
+      setMessage('문제 문구와 정답 해설을 모두 입력해 주세요.');
       return;
     }
 
@@ -158,6 +157,7 @@ export default function AdminPage() {
       display_lines: lines,
       correct_answer: editor.correct_answer,
       explanation: editor.explanation.trim(),
+      hint_enabled: editor.hint_enabled,
       hint_text: editor.hint_text.trim(),
       hint_image_url: editor.hint_image_url || null,
       hint_image_path: editor.hint_image_path || null,
@@ -268,7 +268,7 @@ export default function AdminPage() {
               </div>
               <h2>{question.question_text}</h2>
               <p>{question.explanation}</p>
-              {(question.hint_text || question.hint_image_url) && <small>힌트 등록됨</small>}
+              {question.hint_enabled && <small>힌트 사용 중</small>}
             </div>
             <div className="admin-card-actions">
               <button type="button" onClick={() => setEditor(normalizeQuestion(question))}>수정</button>
@@ -290,29 +290,27 @@ export default function AdminPage() {
               <button type="button" className="admin-editor-close" onClick={() => setEditor(null)} aria-label="편집 닫기">×</button>
             </div>
 
-            <label>문제 전체 문구<textarea value={editor.question_text} onChange={(event) => updateEditor('question_text', event.target.value)} rows="3" /></label>
-            <fieldset>
-              <legend>퀴즈 화면 줄바꿈</legend>
-              {editor.display_lines.map((line, index) => <input key={index} value={line} onChange={(event) => updateLine(index, event.target.value)} placeholder={`${index + 1}번째 줄`} />)}
-            </fieldset>
+            <label>문제 전체 문구<textarea value={editor.question_text} onChange={(event) => updateEditor('question_text', event.target.value)} rows="5" placeholder={'퀴즈 화면에 보일 줄바꿈 위치에서 Enter를 눌러 주세요.'} /></label>
             <fieldset className="admin-answer-field">
               <legend>정답</legend>
               <label><input type="radio" name="answer" checked={editor.correct_answer === true} onChange={() => updateEditor('correct_answer', true)} /> O</label>
               <label><input type="radio" name="answer" checked={editor.correct_answer === false} onChange={() => updateEditor('correct_answer', false)} /> X</label>
             </fieldset>
             <label>정답 해설<textarea value={editor.explanation} onChange={(event) => updateEditor('explanation', event.target.value)} rows="3" /></label>
-            <label>힌트 문구<textarea value={editor.hint_text} onChange={(event) => updateEditor('hint_text', event.target.value)} rows="3" /></label>
-            <label className="admin-file-field">힌트 이미지<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => uploadHintImage(event.target.files?.[0])} disabled={busy} /></label>
-            {editor.hint_image_url && (
-              <div className="admin-hint-preview">
-                <img src={editor.hint_image_url} alt="힌트 미리보기" />
-                <button type="button" onClick={() => setEditor((current) => ({ ...current, hint_image_url: '', hint_image_path: '' }))}>이미지 연결 해제</button>
-              </div>
+            <label className="admin-switch"><input type="checkbox" checked={editor.hint_enabled} onChange={(event) => updateEditor('hint_enabled', event.target.checked)} /> 힌트 사용</label>
+            {editor.hint_enabled && (
+              <>
+                <label>힌트 문구<textarea value={editor.hint_text} onChange={(event) => updateEditor('hint_text', event.target.value)} rows="3" /></label>
+                <label className="admin-file-field">힌트 이미지<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => uploadHintImage(event.target.files?.[0])} disabled={busy} /></label>
+                {editor.hint_image_url && (
+                  <div className="admin-hint-preview">
+                    <img src={editor.hint_image_url} alt="힌트 미리보기" />
+                    <button type="button" onClick={() => setEditor((current) => ({ ...current, hint_image_url: '', hint_image_path: '' }))}>이미지 연결 해제</button>
+                  </div>
+                )}
+              </>
             )}
-            <div className="admin-editor-row">
-              <label>노출 순서<input type="number" min="0" value={editor.sort_order} onChange={(event) => updateEditor('sort_order', event.target.value)} /></label>
-              <label className="admin-switch"><input type="checkbox" checked={editor.is_active} onChange={(event) => updateEditor('is_active', event.target.checked)} /> 이 문제 사용</label>
-            </div>
+            <label className="admin-switch"><input type="checkbox" checked={editor.is_active} onChange={(event) => updateEditor('is_active', event.target.checked)} /> 이 문제 사용</label>
             <div className="admin-editor-actions">
               <button type="button" onClick={() => setEditor(null)}>취소</button>
               <button type="submit" disabled={busy}>{busy ? '처리 중…' : '저장'}</button>
@@ -323,4 +321,3 @@ export default function AdminPage() {
     </main>
   );
 }
-

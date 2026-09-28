@@ -94,7 +94,7 @@ export function App() {
     let active = true;
     supabase
       .from('questions')
-      .select('id, question_text, display_lines, correct_answer, explanation, hint_text, hint_image_url, sort_order')
+      .select('id, question_text, display_lines, correct_answer, explanation, hint_enabled, hint_text, hint_image_url, sort_order')
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
       .then(({ data, error }) => {
@@ -104,6 +104,7 @@ export function App() {
           lines: item.display_lines,
           answer: item.correct_answer,
           explanation: item.explanation,
+          hintEnabled: item.hint_enabled,
           hintText: item.hint_text,
           hintImageUrl: item.hint_image_url,
         }));
@@ -263,23 +264,27 @@ export function App() {
           ))}
         </div>
 
-        <button className="hint-button" type="button" onClick={() => hintDialog.current?.showModal()}>
-          <span>힌트보기</span>
-          <svg className="hint-chevron" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m9 5 7 7-7 7" />
-          </svg>
-        </button>
+        {question.hintEnabled && (
+          <button className="hint-button" type="button" onClick={() => hintDialog.current?.showModal()}>
+            <span>힌트보기</span>
+            <svg className="hint-chevron" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m9 5 7 7-7 7" />
+            </svg>
+          </button>
+        )}
 
         <button className="plus-logo" type="button" onClick={goHome} aria-label="시작 페이지로 이동">
           <img src="/assets/plus-logo.svg" alt="" draggable="false" />
         </button>
 
-        <dialog ref={hintDialog} className="install-dialog hint-dialog" aria-labelledby="hint-title" onClick={event => { if (event.target === hintDialog.current) hintDialog.current.close(); }}>
-          <button className="install-close" type="button" aria-label="힌트 닫기" onClick={() => hintDialog.current?.close()}>×</button>
-          <h2 id="hint-title">힌트</h2>
-          {question.hintImageUrl && <img className="hint-image" src={question.hintImageUrl} alt="퀴즈 힌트" />}
-          <p className="hint-copy">{question.hintText || '힌트가 준비 중이에요.'}</p>
-        </dialog>
+        {question.hintEnabled && (
+          <dialog ref={hintDialog} className="install-dialog hint-dialog" aria-labelledby="hint-title" onClick={event => { if (event.target === hintDialog.current) hintDialog.current.close(); }}>
+            <button className="install-close" type="button" aria-label="힌트 닫기" onClick={() => hintDialog.current?.close()}>×</button>
+            <h2 id="hint-title">힌트</h2>
+            {question.hintImageUrl && <img className="hint-image" src={question.hintImageUrl} alt="퀴즈 힌트" />}
+            <p className="hint-copy">{question.hintText || '힌트가 준비 중이에요.'}</p>
+          </dialog>
+        )}
       </section>
     </main>
   );
