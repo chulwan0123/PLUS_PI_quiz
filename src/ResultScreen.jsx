@@ -1,26 +1,27 @@
 import { useRef } from 'react';
 
-const levels = ['파이 첫걸음', '파이 새싹', '파이 탐험가', '파이 실력자', '파이 전문가', '파이 마스터'];
+const levels = ['파이 첫걸음', '파이 새싹', '파이 탐험가', '파이 계산왕', '파이 자산박사', '파이 마스터'];
 const levelMessages = [
-  '파이를 알아가는 첫걸음을 뗐어요!',
-  '우리 아이 자산에 대한 관심이 싹텄어요!',
-  '우리 아이의 자산공식을 탐험하고 있어요!',
-  '이제 파이를 꽤 잘 알고 있어요!',
-  '우리 아이 자산을 준비할 지식이 탄탄해요!',
-  '당신은 진정한 파이 마스터예요!',
+  ['파이를 알아가는', '첫걸음을 뗐어요!'],
+  ['우리 아이 자산에 대한', '관심이 싹텄어요!'],
+  ['우리 아이의 자산공식을', '탐험하고 있어요!'],
+  ['이제 파이를', '꽤 잘 알고 있어요!'],
+  ['우리 아이 자산을 준비할', '지식이 탄탄해요!'],
+  ['당신은 진정한', '파이 마스터예요!'],
 ];
-const scoreCharacters = {
-  0: '/assets/pi-suri-score-00.png',
-  1: '/assets/pi-suri-score-00.png',
-  2: '/assets/pi-suri-score-02.png',
-  3: '/assets/pi-suri-score-00.png',
-  4: '/assets/pi-suri-score-00.png',
-  5: '/assets/pi-suri-score-00.png',
+const levelCharacters = {
+  0: { src: '/assets/suri-coin.mp4', scale: 0.9, x: 50, y: 50 },
+  1: { src: '/assets/suri-sprout.mp4', scale: 0.92, x: 50, y: 50 },
+  2: { src: '/assets/suri-explorer.mp4', scale: 1.19, x: 50, y: 50 },
+  3: { src: '/assets/suri-calculator.mp4', scale: 1.27, x: 50, y: 50 },
+  4: { src: '/assets/suri-asset-doctor.mp4', scale: 1.23, x: 50, y: 50 },
+  5: { src: '/assets/suri-master.mp4', scale: 1.1, x: 50, y: 50 },
 };
 
-export default function ResultScreen({ questions, answers, score, onHome }) {
+export default function ResultScreen({ questions, answers, score, levelIndex, onHome }) {
   const dialog = useRef(null);
-  const level = levels[score];
+  const level = levels[levelIndex];
+  const character = levelCharacters[levelIndex];
   return (
     <main className="browser-stage">
       <section className="quiz-screen result-page" aria-label="PLUS 파이 퀴즈 완료 및 정답">
@@ -33,20 +34,30 @@ export default function ResultScreen({ questions, answers, score, onHome }) {
           </div>
           <header className="result-hero">
             <p className="result-eyebrow">나의 파이 레벨</p>
-            <h1><span>{score}점</span><br />{level}</h1>
+            <h1>{level}</h1>
             <div className="result-character-slot">
-              <img src={scoreCharacters[score] || '/assets/pi-suri-no-coin.svg'} alt={`${score}점 수리 캐릭터`} draggable="false" />
+              <video
+                aria-label={`${level} 수리 캐릭터 애니메이션`}
+                autoPlay
+                loop
+                muted
+                playsInline
+                src={character.src}
+                style={{ objectPosition: `${character.x}% ${character.y}%`, transform: `scale(${character.scale})` }}
+              />
             </div>
-            <p className="result-message">{levelMessages[score]}</p>
+            <p className="result-message">
+              {levelMessages[levelIndex].map((line) => <span key={line}>{line}</span>)}
+            </p>
           </header>
-          <section className="result-answers" aria-label="전체 5문제 정답과 해설">
+          <section className="result-answers" aria-label={`전체 ${questions.length}문제 정답과 해설`}>
             <h2>총 {questions.length}문제 중<br /><strong>{score}문제</strong>를 맞혔어요!</h2>
             <p className="result-guide">맞힌 문제도 한 번 더 확인해 보세요.</p>
             <ol>
               {questions.map((item, index) => {
                 const correct = answers[index] === item.answer;
                 return (
-                  <li key={index}>
+                  <li key={item.id}>
                     <div className="result-question-meta">
                       <span className="result-question-number">QUIZ {index + 1}</span>
                       <span className={`result-status-mark ${correct ? 'is-correct' : 'is-incorrect'}`} role="img" aria-label={correct ? '맞혔어요' : '틀렸어요'} />
