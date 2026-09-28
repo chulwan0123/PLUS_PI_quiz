@@ -279,10 +279,17 @@ export function App() {
 
         {question.hintEnabled && (
           <dialog ref={hintDialog} className="install-dialog hint-dialog" aria-labelledby="hint-title" onClick={event => { if (event.target === hintDialog.current) hintDialog.current.close(); }}>
-            <button className="install-close" type="button" aria-label="힌트 닫기" onClick={() => hintDialog.current?.close()}>×</button>
-            <h2 id="hint-title">힌트</h2>
-            {question.hintImageUrl && <img className="hint-image" src={question.hintImageUrl} alt="퀴즈 힌트" />}
-            <p className="hint-copy">{question.hintText || '힌트가 준비 중이에요.'}</p>
+            <header className="hint-dialog-header">
+              <h2 id="hint-title">힌트</h2>
+              <button className="install-close" type="button" aria-label="힌트 닫기" onClick={() => hintDialog.current?.close()}>×</button>
+            </header>
+            <div className="hint-dialog-scroll">
+              {question.hintImageUrl && <img className="hint-image" src={question.hintImageUrl} alt="퀴즈 힌트" />}
+              <p className="hint-copy">{question.hintText || '힌트가 준비 중이에요.'}</p>
+            </div>
+            <footer className="hint-dialog-footer">
+              <button className="hint-confirm" type="button" onClick={() => hintDialog.current?.close()}>확인</button>
+            </footer>
           </dialog>
         )}
       </section>
