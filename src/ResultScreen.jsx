@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import RewardDialog from './RewardDialog';
 
 const levels = ['파이 첫걸음', '파이 새싹', '파이 탐험가', '파이 계산왕', '파이 자산박사', '파이 마스터'];
 const levelMessages = [
@@ -25,6 +26,7 @@ export default function ResultScreen({ questions, answers, score, levelIndex, on
   return (
     <main className="browser-stage">
       <section className="quiz-screen result-page" aria-label="PLUS 파이 퀴즈 완료 및 정답">
+        <RewardDialog score={score} />
         <div className="result-scroll" tabIndex={0} aria-label="퀴즈 결과와 전체 해설">
           <div className="home-brand-row result-brand-row" aria-label="PI와 PLUS">
             <button className="result-home-button" type="button" onClick={onHome} aria-label="시작 페이지로 이동">

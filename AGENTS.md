@@ -10,6 +10,8 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 
 ## Project decisions
 
+- On result entry, show a centered white rounded gift popup with PNG particles bursting upward: mixed candy images for 0–1 correct answers, tarpaulin bags for 2. Match the hint popup's white/black visual style; particles are 182% of the original size, fall to the bottom, bounce once, then exit below the screen. Its button counts down from 10 seconds and dismisses immediately on tap; auto-dismiss at zero. Use supplied `game_icon` assets.
+
 - Target display is LG StanbyME 2 in portrait orientation with a 9:16 central canvas.
 - Landscape browsers show the white 9:16 canvas centered on a gray-100 background.
 - Use the color tokens and supplied assets from `/Users/hanwha/Documents/GitHub/plus-design-system`.
