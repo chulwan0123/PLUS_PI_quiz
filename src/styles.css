@@ -730,8 +730,7 @@ button { font: inherit; }
 .hint-confirm { width: 100%; height: calc(var(--canvas-width) * .14); border: 0; border-radius: 999px; color: var(--color-white); background: var(--color-gray-900); font-family: 'LIFEPLUS', 'Pretendard', sans-serif; font-size: calc(var(--canvas-width) * .048); font-weight: 700; cursor: pointer; }
 @keyframes hint-sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes hint-backdrop-in { from { background: rgba(0, 0, 0, 0); } to { background: rgba(0, 0, 0, .65); } }
-.install-qr-placeholder { width: 75%; aspect-ratio: 1; margin: 8% auto; border-radius: 16px; background: var(--color-gray-100); display: flex; flex-direction: column; justify-content: center; gap: .4em; font-size: calc(var(--canvas-width) * .045); }
-.install-qr-placeholder strong { font-size: calc(var(--canvas-width) * .1); }
+.install-qr-code { display: block; width: min(75%, 340px); height: auto; aspect-ratio: 1; margin: 8% auto; }
 .install-dialog > p:not(.result-eyebrow) { font-family: 'Pretendard', sans-serif; font-size: calc(var(--canvas-width) * .04); line-height: 1.6; }
 .result-page button:focus-visible { outline: 3px solid var(--color-orange-700); outline-offset: 3px; }
 

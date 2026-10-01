@@ -81,8 +81,8 @@ export default function ResultScreen({ questions, answers, score, levelIndex, on
           <button className="install-close" aria-label="설치 안내 닫기" onClick={() => dialog.current.close()}>×</button>
           <p className="result-eyebrow">PLUS 파이</p>
           <h2 id="install-title">파이를 만나보세요</h2>
-          <div className="install-qr-placeholder" role="img" aria-label="설치 QR 코드 준비 중"><strong>QR</strong><span>준비 중</span></div>
-          <p>설치 QR을 준비하고 있어요.<br />조금만 기다려 주세요!</p>
+          <img className="install-qr-code" src="/assets/plus-pi-airbridge-qr.svg" alt="PLUS 파이 앱 설치 링크 QR 코드" />
+          <p>QR 코드를 스캔하고<br />파이 앱을 만나보세요!</p>
           <button className="install-confirm" onClick={() => dialog.current.close()}>확인</button>
         </dialog>
       </section>
