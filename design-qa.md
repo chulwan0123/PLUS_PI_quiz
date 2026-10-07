@@ -1,56 +1,25 @@
-# Design QA
+# 현재 화면 및 동작 검증
 
-## Evidence
+검증일: 2026-10-07 (한국 시간). 대상: https://plus-pi-quiz.vercel.app/
 
-- Source visual truth: `reference-kiosk-style.png` (user-provided kiosk reference)
-- Implementation captures: `orange-paper-question.png`, `orange-paper-result.png`
-- Earlier style-reference comparison: `design-comparison-plus-colors.png`
-- Browser viewport: 1600 × 900 CSS px
-- Portrait canvas: 506 × 900 CSS px, captured at 506 × 900 px
-- Source image: 766 × 1198 px, normalized to 575 × 900 px for comparison
-- State: first O/X question, no answer selected
+## 현재 구현
 
-## Findings
+- 홈과 결과는 흰색 바탕, 문제 화면은 PLUS 오렌지 바탕과 흰색 카드입니다.
+- 9:16 중앙 캔버스이며 관찰한 브라우저에서는 405×720 CSS px입니다.
+- 홈 캐릭터는 수리 SVG, 태그라인은 두 PNG, 결과 캐릭터는 무음 반복 MP4 6개입니다.
+- 매 회차 활성 문제 중 정확히 2문항을 출제합니다. 정답은 결과에서 공개합니다.
+- 운영 활성 문제 5개에 테스트 문구가 없으며 힌트 문구·이미지 연결·활성 힌트가 없습니다.
 
-- No actionable P0, P1, or P2 issue remains for the requested typography, button-style, and color update.
-- The implementation follows the reference's heavy display type, compact tracking, outlined capsule controls, black type, and framed kiosk composition, while using PLUS orange instead of the reference lime.
-- The implementation intentionally does not reproduce the reference illustration. The user will supply the final illustration asset separately.
-- The 9:16 orange canvas remains centered on the gray landscape browser stage with no viewport overflow.
-- Question screens use an orange base plane, a raised white paper card containing the question and O/X controls, and a separate white rounded-square back control.
-- The completion screen uses the same orange base and raised white-paper composition.
+## 실제 확인
 
-## Required Fidelity Surfaces
+홈 시작, 2문항 자동 진행, 0/1/2개 정답 결과, 캔디/타포린백 팝업, 팝업 수동 및 자동 닫힘, 결과 해설, QR 모달, 다시 풀기를 확인했습니다. 결과 동영상은 재생 중이었고 검수 화면의 영상 6개는 모두 readyState 4로 로드됐습니다. 검증 세션에서 브라우저 error/warn은 없었습니다.
 
-- Fonts and typography: LIFEPLUS Bold creates the requested heavy display hierarchy; question copy uses tighter tracking and compact line height without clipping.
-- Spacing and layout rhythm: the header controls remain on the orange plane; question label, copy, and large O/X controls fit entirely inside the white paper; the PLUS logo stays below the paper with no overlap.
-- Colors and tokens: every visible UI color is sourced from the local PLUS Design System. The frame and unselected O/X controls use orange-400 `#ffb379`; the selected O/X control and primary accents use orange-600 `#f37521`; supporting colors use gray-100/200/300/700/900, white, and black. No mint/olive token remains.
-- Image quality: the existing PLUS SVG logo and back icon remain vector assets. No substitute illustration or placeholder character was introduced.
-- Copy and content: the existing five-question quiz copy and deferred-answer behavior are unchanged.
+힌트 기능은 운영 정리 전에 모달 동작을 확인했고, 정리 후에는 활성 문제 5개의 힌트가 모두 꺼진 것을 공개 DB 응답으로 확인했습니다. 실제 사용자 화면에도 힌트 버튼이 없었습니다. 관리자 Google 로그인, 기존 문항 수정, 테스트 문항 비활성화 저장도 수행했습니다.
 
-## Interaction Verification
+프로덕션 빌드와 Sites 패키징 테스트 4개가 통과했습니다. 운영 JS/CSS와 공개 에셋 39개는 검증한 소스/빌드와 바이트 단위로 일치했습니다. 운영 코드 기준 커밋은 `3ff351731232a32949cded894d965b9ceeafd78a`입니다. 이 문서 업데이트는 앱 코드를 바꾸지 않습니다.
 
-- O/X selection, animated automatic progression, completion review, scoring, and restart were exercised in the browser.
-- Verified that no `다음 문제` button is rendered, the selected button remains visible in its confirmation animation at 350ms, and the next question appears after 700ms.
-- Verified that the fifth selection automatically opens the completion page after the same animation delay.
-- Correctness remains hidden during the questions and appears only on the completion screen.
-- Production build and Sites packaging tests pass (4/4).
+## 범위와 남은 사항
 
-## Focused Comparison
+모든 화면 크기·실제 StanbyME 터치 하드웨어의 육안 검수를 완료한 것은 아닙니다. 서버 로그 조회는 Vercel 권한 부족으로 확인하지 못했습니다. 관리자 신규 문항 추가·영구 삭제·이미지 업로드와 휴대폰 QR 이후 설치/전환은 미검증입니다. 알려진 입력 검증·이미지 정리 문제는 [운영 검증 문서](docs/production-verification.md)를 참고하세요.
 
-- A separate crop was unnecessary because the normalized comparison clearly shows the display type, progress track, button outline/radius, lime fill, and portrait border at readable scale.
-
-## Comparison History
-
-- Pass 1: matched the reference's typography and capsule-button language while keeping the existing PLUS palette.
-- Pass 2: removed unused temporary color declarations and confirmed that all remaining hex values map directly to the local PLUS color-token file.
-- Pass 3: replaced the remaining mint/olive surfaces with PLUS brand orange-600 and verified rendered RGB `243, 117, 33` on the frame, progress bar, and both O/X buttons.
-- Pass 4: changed the frame and idle O/X controls to orange-400, retained orange-600 for the selected state, and verified the rendered RGB values after the selection transition completed.
-- Pass 5: removed the manual next control and added a 700ms press/confirm animation followed by automatic progression; verified the complete five-question flow in-browser.
-- Pass 6: inverted the composition to an orange base with a raised white paper, moved the question and O/X controls inside it, and changed back navigation to a white rounded-square control. Verified both question and completion layouts without overflow.
-- Pass 7: centered the problem number and multiline question copy on the white paper. Verified on question 3 that the paper, copy block, and heading share the same horizontal center coordinate.
-
-## Follow-up Polish
-
-- Add and position the final user-supplied illustration when available.
-
-final result: passed
+기존 5문항 UI의 과거 검수 결과는 [보관 문서](docs/archive/design-qa-legacy.md)에 있습니다. 현재 구현의 검증 결과와 혼동하지 마세요.
