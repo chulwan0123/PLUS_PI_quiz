@@ -16,7 +16,7 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Target display is LG StanbyME 2 in portrait orientation with a 9:16 central canvas.
 - Landscape browsers show the white 9:16 canvas centered on a gray-100 background.
 - Use the color tokens and supplied assets from `/Users/hanwha/Documents/GitHub/plus-design-system`.
-- This prototype has no audio or analytics. Quiz content management uses Supabase Auth, Postgres, and Storage when the public Supabase environment variables are configured; the hardcoded question pool remains as a safe local fallback.
+- This prototype has no audio. Since 2026-10-09 it logs anonymous participation events (start, answer, complete, qr_open, home) to the Supabase `quiz_events` table via `src/analytics.js`; logging is fire-and-forget and must never block the quiz. Anonymous clients may only insert; only `@hanwha.plus` admins can read. `/admin#stats` (참여 통계 tab) shows daily, AM/PM, hourly and 30-minute completion counts in KST. Quiz content management uses Supabase Auth, Postgres, and Storage when the public Supabase environment variables are configured; the hardcoded question pool remains as a safe local fallback.
 - Home features the original character extracted from `PI 수리.ai`, holding viewer-left O and viewer-right X signs with alternating silent animation. Preserve the supplied character's original colors.
 - The full home O/X mascot SVG is offset 10px to the left without changing its size or internal paddle animation.
 - Result levels use six silent, looping MP4 character animations—Coin, Sprout, Explorer, Calculator, Asset Doctor, and Pi Master—cropped through the same square mask used by the `/suri-review` page.
