@@ -30,7 +30,8 @@ function formatDuration(ms) {
 }
 
 const ESTIMATES = estimateDays();
-const ESTIMATE_TOTAL = ESTIMATES.reduce((s, d) => s + d.total, 0);
+const EST_BY_DATE = Object.fromEntries(ESTIMATES.map((e) => [e.date, e]));
+const estFor = (selected) => (selected === 'all' ? ESTIMATES : ESTIMATES.filter((e) => e.date === selected));
 
 const pct = (a, b) => (b > 0 ? `${Math.round((a / b) * 100)}%` : '-');
 
@@ -131,7 +132,10 @@ export default function AdminStats({ questions }) {
     [events, device],
   );
   const allRounds = useMemo(() => buildRounds(scopedEvents), [scopedEvents]);
-  const dates = useMemo(() => [...new Set(allRounds.map((r) => toKst(r.startedAt).date))].sort(), [allRounds]);
+  const dates = useMemo(
+    () => [...new Set([...ESTIMATES.map((e) => e.date), ...allRounds.map((r) => toKst(r.startedAt).date)])].sort(),
+    [allRounds],
+  );
   const rounds = useMemo(
     () => (selectedDate === 'all' ? allRounds : allRounds.filter((r) => toKst(r.startedAt).date === selectedDate)),
     [allRounds, selectedDate],
@@ -140,20 +144,35 @@ export default function AdminStats({ questions }) {
 
   const summary = useMemo(() => {
     const durations = completed.map((r) => r.durationMs).filter((v) => v > 0).sort((a, b) => a - b);
+    const est = estFor(selectedDate).reduce((sum, e) => sum + e.total, 0);
     return {
-      starts: rounds.length,
-      completes: completed.length,
+      est,
+      realStarts: rounds.length,
+      realCompletes: completed.length,
+      starts: rounds.length + est,
+      completes: completed.length + est,
       qr: rounds.filter((r) => r.qr).length,
       perfect: completed.filter((r) => r.score === 2).length,
       median: durations.length ? durations[Math.floor(durations.length / 2)] : null,
     };
-  }, [rounds, completed]);
+  }, [rounds, completed, selectedDate]);
 
   const daily = useMemo(() => dates.map((date) => {
     const dayRounds = allRounds.filter((r) => toKst(r.startedAt).date === date);
     const done = dayRounds.filter((r) => r.completedAt);
     const am = done.filter((r) => toKst(r.completedAt).hour < 12).length;
-    return { date, starts: dayRounds.length, completes: done.length, am, pm: done.length - am, qr: dayRounds.filter((r) => r.qr).length };
+    const e = EST_BY_DATE[date];
+    return {
+      date,
+      estimated: Boolean(e),
+      realStarts: dayRounds.length,
+      realCompletes: done.length,
+      starts: dayRounds.length + (e?.total || 0),
+      completes: done.length + (e?.total || 0),
+      am: am + (e?.am || 0),
+      pm: done.length - am + (e?.pm || 0),
+      qr: dayRounds.filter((r) => r.qr).length,
+    };
   }), [dates, allRounds]);
 
   const hourly = useMemo(() => {
@@ -164,10 +183,12 @@ export default function AdminStats({ questions }) {
       const key = `${k.date}|${k.hour}`;
       counts[key] = (counts[key] || 0) + 1;
     });
-    const columns = [
-      ...ESTIMATES.map((e) => ({ key: `est-${e.date}`, label: `${dateLabel(e.date)} 추정`, estimate: true, cell: (h) => e.hours[h] || 0 })),
-      ...dates.map((date) => ({ key: date, label: dateLabel(date), estimate: false, cell: (h) => counts[`${date}|${h}`] || 0 })),
-    ];
+    const columns = dates.map((date) => ({
+      key: date,
+      label: dateLabel(date),
+      estimated: (h) => Boolean(EST_BY_DATE[date]?.hours[h]),
+      cell: (h) => (counts[`${date}|${h}`] || 0) + (EST_BY_DATE[date]?.hours[h] || 0),
+    }));
     const usedHours = [
       ...doneAll.map((r) => toKst(r.completedAt).hour),
       ...ESTIMATES.flatMap((e) => Object.keys(e.hours).map(Number)),
@@ -254,11 +275,11 @@ export default function AdminStats({ questions }) {
       </div>
 
       <div className="admin-stats-cards">
-        <article className="is-primary"><span>결과 확인</span><strong>{summary.completes.toLocaleString()}<small>회</small></strong><p>2문제를 모두 풀고 결과 화면까지 본 판 수{selectedDate === 'all' && ESTIMATE_TOTAL > 0 ? ` · 기록 전 추정 약 ${ESTIMATE_TOTAL}판 별도` : ''}</p></article>
-        <article><span>게임 시작</span><strong>{summary.starts.toLocaleString()}<small>회</small></strong><p>완료율 {pct(summary.completes, summary.starts)}</p></article>
-        <article><span>앱 QR 열람</span><strong>{summary.qr.toLocaleString()}<small>회</small></strong><p>결과 확인 대비 {pct(summary.qr, summary.completes)}</p></article>
+        <article className="is-primary"><span>결과 확인</span><strong>{summary.completes.toLocaleString()}<small>회</small></strong><p>{summary.est > 0 ? `실제 기록 ${summary.realCompletes}회 + 기록 전 추정 약 ${summary.est}회` : '2문제를 모두 풀고 결과 화면까지 본 판 수'}</p></article>
+        <article><span>게임 시작</span><strong>{summary.starts.toLocaleString()}<small>회</small></strong><p>완료율 {pct(summary.realCompletes, summary.realStarts)}{summary.est > 0 ? ' (실제 기록 기준)' : ''}</p></article>
+        <article><span>앱 QR 열람</span><strong>{summary.qr.toLocaleString()}<small>회</small></strong><p>실제 결과 확인 대비 {pct(summary.qr, summary.realCompletes)}</p></article>
         <article><span>한 판 소요시간</span><strong>{formatDuration(summary.median)}</strong><p>결과 확인까지 걸린 시간(중앙값)</p></article>
-        <article><span>2문제 모두 정답</span><strong>{pct(summary.perfect, summary.completes)}</strong><p>{summary.perfect.toLocaleString()}회</p></article>
+        <article><span>2문제 모두 정답</span><strong>{pct(summary.perfect, summary.realCompletes)}</strong><p>{summary.perfect.toLocaleString()}회</p></article>
       </div>
 
       <div className="admin-stats-panel">
@@ -268,25 +289,11 @@ export default function AdminStats({ questions }) {
           <table className="admin-stats-table">
             <thead><tr><th>날짜</th><th>오전</th><th>오후</th><th>결과 확인 합계</th><th>게임 시작</th><th>완료율</th><th>QR 열람</th></tr></thead>
             <tbody>
-              {ESTIMATES.map((e) => (
-                <tr key={`est-${e.date}`} className="is-estimate">
-                  <th>{dateLabel(e.date)} <span className="admin-stats-pill is-estimate">추정</span></th><td>약 {e.am}</td><td>약 {e.pm}</td><td><strong>약 {e.total}</strong></td><td>-</td><td>-</td><td>-</td>
-                </tr>
-              ))}
               {daily.map((d) => (
                 <tr key={d.date} className={selectedDate === d.date ? 'is-selected' : ''} onClick={() => setSelectedDate(d.date)}>
-                  <th>{dateLabel(d.date)}</th><td>{d.am}</td><td>{d.pm}</td><td><strong>{d.completes}</strong></td><td>{d.starts}</td><td>{pct(d.completes, d.starts)}</td><td>{d.qr}</td>
+                  <th>{dateLabel(d.date)}{d.estimated && <span className="admin-stats-pill is-estimate">추정 포함</span>}</th><td>{d.am}</td><td>{d.pm}</td><td><strong>{d.completes}</strong></td><td>{d.starts}</td><td>{d.realStarts ? pct(d.realCompletes, d.realStarts) : '-'}</td><td>{d.realStarts ? d.qr : '-'}</td>
                 </tr>
               ))}
-              {ESTIMATES.length > 0 && (
-                <tr className="is-total">
-                  <th>추정 포함 합계</th>
-                  <td>약 {ESTIMATES.reduce((s, e) => s + e.am, 0) + daily.reduce((s, d) => s + d.am, 0)}</td>
-                  <td>약 {ESTIMATES.reduce((s, e) => s + e.pm, 0) + daily.reduce((s, d) => s + d.pm, 0)}</td>
-                  <td><strong>약 {ESTIMATE_TOTAL + daily.reduce((s, d) => s + d.completes, 0)}</strong></td>
-                  <td>-</td><td>-</td><td>-</td>
-                </tr>
-              )}
               {daily.length > 1 && (
                 <tr className="is-total">
                   <th>합계</th>
@@ -294,7 +301,7 @@ export default function AdminStats({ questions }) {
                   <td>{daily.reduce((s, d) => s + d.pm, 0)}</td>
                   <td><strong>{daily.reduce((s, d) => s + d.completes, 0)}</strong></td>
                   <td>{daily.reduce((s, d) => s + d.starts, 0)}</td>
-                  <td>{pct(daily.reduce((s, d) => s + d.completes, 0), daily.reduce((s, d) => s + d.starts, 0))}</td>
+                  <td>{pct(daily.reduce((s, d) => s + d.realCompletes, 0), daily.reduce((s, d) => s + d.realStarts, 0))}</td>
                   <td>{daily.reduce((s, d) => s + d.qr, 0)}</td>
                 </tr>
               )}
@@ -304,9 +311,9 @@ export default function AdminStats({ questions }) {
         </div>
         {ESTIMATES.length > 0 && (
           <p className="admin-stats-estimate-note">
-            <strong>추정</strong> 행은 기록 기능이 생기기 전(10/8 ~ 10/9 {ESTIMATE_SNAPSHOT_AT.slice(11)}, TV 새로고침 전) 구간입니다.
-            Supabase 접속 기록에서 TV가 문제를 불러온 요청 수(시작·홈 이동 때 1회씩)를 2로 나눈 <strong>게임 시작 추정치</strong>로,
-            결과 확인 횟수와 정확히 같지 않고 오차가 있을 수 있습니다.
+            <strong>추정 포함</strong>: 기록 기능이 생기기 전(10/8 ~ 10/9 {ESTIMATE_SNAPSHOT_AT.slice(11)}, TV 새로고침 전) 구간은
+            Supabase 접속 기록에서 TV가 문제를 불러온 요청 수(시작·홈 이동 때 1회씩)를 2로 나눈 추정치를 결과 확인·게임 시작에 합산했습니다.
+            이 구간은 오차가 있을 수 있고, 완료율·QR·정답률·소요시간은 실제 기록만으로 계산합니다.
           </p>
         )}
       </div>
@@ -314,17 +321,18 @@ export default function AdminStats({ questions }) {
       {hourly.columns.length > 0 && (
         <div className="admin-stats-panel">
           <h2>시간대별 결과 확인 횟수</h2>
-          <p className="admin-stats-note">진한 칸일수록 많이 참여한 시간대입니다. ‘추정’ 열(~숫자)은 기록 전 게임 시작 추정치입니다.</p>
+          <p className="admin-stats-note">진한 칸일수록 많이 참여한 시간대입니다. ~가 붙은 칸은 기록 전 추정치가 포함된 시간대입니다.</p>
           <div className="admin-stats-table-wrap">
             <table className="admin-stats-table admin-stats-heat">
-              <thead><tr><th>시간</th>{hourly.columns.map((c) => <th key={c.key} className={c.estimate ? 'is-estimate' : ''}>{c.label}</th>)}</tr></thead>
+              <thead><tr><th>시간</th>{hourly.columns.map((c) => <th key={c.key}>{c.label}</th>)}</tr></thead>
               <tbody>
                 {hourly.hours.map((h) => (
                   <tr key={h} className={h === 12 ? 'is-noon' : ''}>
                     <th>{String(h).padStart(2, '0')}시</th>
                     {hourly.columns.map((c) => {
                       const v = c.cell(h);
-                      return <td key={c.key} className={c.estimate ? 'is-estimate' : ''} style={{ '--heat': v / hourly.max }}>{v ? (c.estimate ? `~${v}` : v) : ''}</td>;
+                      const est = c.estimated(h);
+                      return <td key={c.key} className={est ? 'is-estimate' : ''} style={{ '--heat': v / hourly.max }}>{v ? (est ? `~${v}` : v) : ''}</td>;
                     })}
                   </tr>
                 ))}
