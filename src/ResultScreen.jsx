@@ -19,7 +19,7 @@ const levelCharacters = {
   5: { src: '/assets/suri-master.mp4', scale: 1.1, x: 50, y: 50 },
 };
 
-export default function ResultScreen({ questions, answers, score, levelIndex, onHome }) {
+export default function ResultScreen({ questions, answers, score, levelIndex, onHome, onInstallOpen }) {
   const dialog = useRef(null);
   const level = levels[levelIndex];
   const character = levelCharacters[levelIndex];
@@ -74,7 +74,7 @@ export default function ResultScreen({ questions, answers, score, levelIndex, on
           </section>
         </div>
         <footer className="result-action-bar">
-          <button className="result-install" onClick={() => dialog.current.showModal()}>파이 앱 시작해보기</button>
+          <button className="result-install" onClick={() => { dialog.current.showModal(); onInstallOpen?.(); }}>파이 앱 시작해보기</button>
           <button className="result-retry" onClick={onHome}>퀴즈 다시 풀기</button>
         </footer>
         <dialog ref={dialog} className="install-dialog" aria-labelledby="install-title" onClick={event => { if (event.target === dialog.current) dialog.current.close(); }}>

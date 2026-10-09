@@ -4,6 +4,7 @@ import ResultScreen from './ResultScreen';
 import SuriVideoReview from './SuriVideoReview';
 import AdminPage from './AdminPage';
 import { isSupabaseConfigured, supabase } from './supabase';
+import { newRoundId, trackQuizEvent } from './analytics';
 
 const fallbackQuestions = [
   {
@@ -80,6 +81,8 @@ export function App() {
   const [displayProgress, setDisplayProgress] = useState(0);
   const transitionTimer = useRef(null);
   const hintDialog = useRef(null);
+  const roundRef = useRef(null);
+  const roundStartedAt = useRef(0);
 
   const openHint = () => {
     const dialog = hintDialog.current;
@@ -142,14 +145,26 @@ export function App() {
     const nextAnswers = answers.map((answer, index) => index === questionIndex ? value : answer);
     setAnswers(nextAnswers);
     setTransitioning(true);
+    trackQuizEvent('answer', roundRef.current, {
+      question_id: String(question.id).slice(0, 64),
+      question_index: questionIndex,
+      is_correct: value === question.answer,
+      elapsed_ms: Date.now() - roundStartedAt.current,
+    });
     if (questionIndex === quizQuestions.length - 1) {
       setDisplayProgress(100);
     }
     transitionTimer.current = setTimeout(() => {
       if (questionIndex === quizQuestions.length - 1) {
         const finalScore = nextAnswers.reduce((total, answer, index) => total + Number(answer === quizQuestions[index].answer), 0);
-        setResultLevel(pickResultLevel(finalScore));
+        const level = pickResultLevel(finalScore);
+        setResultLevel(level);
         setCompleted(true);
+        trackQuizEvent('complete', roundRef.current, {
+          score: finalScore,
+          result_level: level,
+          elapsed_ms: Date.now() - roundStartedAt.current,
+        });
       } else {
         setQuestionIndex((current) => current + 1);
       }
@@ -162,6 +177,8 @@ export function App() {
     if (questionIndex > 0) {
       setQuestionIndex((current) => current - 1);
     } else {
+      trackQuizEvent('home', roundRef.current, { stage: 'quiz', question_index: 0, elapsed_ms: Date.now() - roundStartedAt.current });
+      roundRef.current = null;
       setStarted(false);
     }
   };
@@ -175,6 +192,9 @@ export function App() {
     setTransitioning(false);
     setDisplayProgress(0);
     setStarted(true);
+    roundRef.current = newRoundId();
+    roundStartedAt.current = Date.now();
+    trackQuizEvent('start', roundRef.current);
   };
 
   const restart = () => {
@@ -187,6 +207,12 @@ export function App() {
   };
 
   const goHome = () => {
+    trackQuizEvent('home', roundRef.current, {
+      stage: completed ? 'result' : 'quiz',
+      question_index: completed ? null : questionIndex,
+      elapsed_ms: Date.now() - roundStartedAt.current,
+    });
+    roundRef.current = null;
     restart();
     setStarted(false);
   };
@@ -224,7 +250,7 @@ export function App() {
   }
 
   if (completed) {
-    return <ResultScreen questions={quizQuestions} answers={answers} score={score} levelIndex={resultLevel} onHome={goHome} />;
+    return <ResultScreen questions={quizQuestions} answers={answers} score={score} levelIndex={resultLevel} onHome={goHome} onInstallOpen={() => trackQuizEvent('qr_open', roundRef.current, { stage: 'result', elapsed_ms: Date.now() - roundStartedAt.current })} />;
   }
 
   return (

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { isAllowedAdminEmail, isSupabaseConfigured, supabase } from './supabase';
+import AdminStats from './AdminStats';
 
 const emptyQuestion = {
   question_text: '',
@@ -36,6 +37,12 @@ export default function AdminPage() {
   const [editor, setEditor] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [tab, setTab] = useState(() => (window.location.hash === '#stats' ? 'stats' : 'questions'));
+
+  const changeTab = (next) => {
+    setTab(next);
+    window.history.replaceState(null, '', next === 'stats' ? '#stats' : window.location.pathname);
+  };
 
   const adminEmail = session?.user?.email ?? '';
   const allowed = isAllowedAdminEmail(adminEmail);
@@ -242,7 +249,7 @@ export default function AdminPage() {
         <div>
           <span className="admin-kicker">PLUS 파이</span>
           <h1>퀴즈 어드민</h1>
-          <p>활성 문제 중 매번 2문제가 무작위로 출제됩니다.</p>
+          <p>{tab === 'stats' ? '베이비페어 키오스크 참여 현황을 확인합니다.' : '활성 문제 중 매번 2문제가 무작위로 출제됩니다.'}</p>
         </div>
         <div className="admin-account">
           <span>{adminEmail}</span>
@@ -250,6 +257,14 @@ export default function AdminPage() {
         </div>
       </header>
 
+      <nav className="admin-tabs" aria-label="어드민 메뉴">
+        <button type="button" className={tab === 'questions' ? 'is-selected' : ''} onClick={() => changeTab('questions')}>문제 관리</button>
+        <button type="button" className={tab === 'stats' ? 'is-selected' : ''} onClick={() => changeTab('stats')}>참여 통계</button>
+      </nav>
+
+      {tab === 'stats' && <AdminStats questions={questions} />}
+
+      {tab === 'questions' && (<>
       <section className="admin-toolbar">
         <div><strong>{questions.length}</strong>개 문제 · 활성 <strong>{activeCount}</strong>개</div>
         <button type="button" onClick={() => setEditor(normalizeQuestion({ sort_order: questions.length + 1 }))}>문제 추가</button>
@@ -278,6 +293,7 @@ export default function AdminPage() {
         ))}
         {questions.length === 0 && <p className="admin-empty">등록된 문제가 없습니다. 첫 문제를 추가해 주세요.</p>}
       </section>
+      </>)}
 
       {editor && (
         <div className="admin-editor-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setEditor(null); }}>
