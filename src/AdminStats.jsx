@@ -284,7 +284,7 @@ export default function AdminStats({ questions }) {
 
       {ESTIMATES.length > 0 && (
         <ul className="admin-stats-period-note">
-          <li><b className="is-estimate">추정</b> 10/8(목) 전체 ~ 10/9(금) 오전 {ESTIMATE_SNAPSHOT_AT.slice(11)} · 기록 기능이 없던 때라 TV가 서버에 문제를 요청한 횟수 ÷ 2로 계산했어요 (실제와 조금 다를 수 있어요)</li>
+          <li><b className="is-estimate">추정</b> 10/8(목) 전체 ~ 10/9(금) 오전 {ESTIMATE_SNAPSHOT_AT.slice(11)} · 기록 기능이 없던 때라 TV가 서버에 문제를 요청한 횟수로 계산했어요. 한 판마다 ‘시작하기’ 누를 때 1번, 끝나고 처음 화면으로 돌아갈 때 1번, 총 2번 요청하기 때문에 <b className="is-plain">요청 수 ÷ 2 = 판 수</b>예요. 중간에 그만둔 판도 포함돼서 실제와 조금 다를 수 있어요.</li>
           <li><b className="is-real">실제 기록</b> 10/9(금) 오전 {ESTIMATE_SNAPSHOT_AT.slice(11)}부터 · TV 새로고침 후 게임 화면이 한 판마다 직접 남긴 기록이에요</li>
         </ul>
       )}

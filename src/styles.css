@@ -924,3 +924,4 @@ button { font: inherit; }
 .admin-stats-period-note b { display: inline-block; min-width: 58px; margin-right: 6px; padding: 1px 8px; border-radius: 999px; font-size: 12px; text-align: center; }
 .admin-stats-period-note b.is-estimate { color: #7a390c; background: var(--color-orange-100); }
 .admin-stats-period-note b.is-real { color: #17653a; background: #e6f7ed; }
+.admin-stats-period-note b.is-plain { display: inline; min-width: 0; margin: 0; padding: 0; color: var(--color-gray-900); font-size: inherit; background: none; }
