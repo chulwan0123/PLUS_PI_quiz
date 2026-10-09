@@ -4,11 +4,11 @@
 // home, so one game ≈ two requests. Values below are raw request counts per KST hour;
 // the admin divides by two. These are approximate game STARTS, not confirmed result views.
 
-export const ESTIMATE_SNAPSHOT_AT = '2026-10-09 10:54';
+export const ESTIMATE_SNAPSHOT_AT = '2026-10-09 10:59';
 
 export const estimatedRequestsByHour = {
   '2026-10-08': { 8: 1, 9: 8, 10: 84, 11: 75, 12: 61, 13: 50, 14: 34, 15: 32, 16: 32, 17: 4 },
-  '2026-10-09': { 9: 3, 10: 49 },
+  '2026-10-09': { 9: 3, 10: 55 },
 };
 
 export function estimateDays() {
