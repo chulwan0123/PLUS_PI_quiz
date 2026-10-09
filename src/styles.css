@@ -920,3 +920,7 @@ button { font: inherit; }
 .admin-stats-period p + p { margin-top: 4px; }
 .admin-stats-period p { line-height: 1.6; }
 .admin-stats-period b { color: var(--color-gray-900); }
+.admin-stats-period-note { display: grid; gap: 4px; margin: -4px 0 0; padding: 0 4px; list-style: none; color: #5a5a5e; font-size: 13px; line-height: 1.6; }
+.admin-stats-period-note b { display: inline-block; min-width: 58px; margin-right: 6px; padding: 1px 8px; border-radius: 999px; font-size: 12px; text-align: center; }
+.admin-stats-period-note b.is-estimate { color: #7a390c; background: var(--color-orange-100); }
+.admin-stats-period-note b.is-real { color: #17653a; background: #e6f7ed; }

@@ -274,25 +274,6 @@ export default function AdminStats({ questions }) {
         </div>
       </div>
 
-      {ESTIMATES.length > 0 && (
-        <div className="admin-stats-period" role="note" aria-label="추정 구간과 실제 기록 구간">
-          <div className="is-estimate">
-            <span>추정</span>
-            <strong>10/8(목) 하루 전체<br />+ 10/9(금) 오전 {ESTIMATE_SNAPSHOT_AT.slice(11)}까지</strong>
-            <h3>어떻게 셌나요?</h3>
-            <p>이때는 게임 기록 기능이 없었어요. 그래서 TV가 서버(Supabase)에 “문제 주세요” 하고 요청한 횟수를 셌어요.</p>
-            <p>게임 한 판마다 요청이 2번(시작할 때, 처음 화면으로 돌아갈 때) 생겨서 <b>요청 수 ÷ 2 = 판 수</b>로 계산했어요. 그래서 실제와 조금 다를 수 있어요.</p>
-          </div>
-          <div className="is-real">
-            <span>실제 기록</span>
-            <strong>10/9(금) 오전 {ESTIMATE_SNAPSHOT_AT.slice(11)}부터<br />행사 끝날 때까지</strong>
-            <h3>어떻게 셌나요?</h3>
-            <p>TV를 새로고침한 뒤부터는 게임 화면이 직접 기록을 남겨요.</p>
-            <p>‘시작하기’를 누를 때, 답을 고를 때, 결과 화면이 뜰 때마다 서버(Supabase)의 게임 기록 표에 한 줄씩 저장돼요. 그래서 <b>한 판 한 판 정확하게</b> 셀 수 있어요.</p>
-          </div>
-        </div>
-      )}
-
       <div className="admin-stats-cards">
         <article className="is-primary"><span>결과 확인</span><strong>{summary.completes.toLocaleString()}<small>회</small></strong><p>{summary.est > 0 ? `실제 기록 ${summary.realCompletes}회 + 기록 전 추정 약 ${summary.est}회` : '2문제를 모두 풀고 결과 화면까지 본 판 수'}</p></article>
         <article><span>게임 시작</span><strong>{summary.starts.toLocaleString()}<small>회</small></strong><p>완료율 {pct(summary.realCompletes, summary.realStarts)}{summary.est > 0 ? ' (실제 기록 기준)' : ''}</p></article>
@@ -300,6 +281,13 @@ export default function AdminStats({ questions }) {
         <article><span>한 판 소요시간</span><strong>{formatDuration(summary.median)}</strong><p>결과 확인까지 걸린 시간(중앙값)</p></article>
         <article><span>2문제 모두 정답</span><strong>{pct(summary.perfect, summary.realCompletes)}</strong><p>{summary.perfect.toLocaleString()}회</p></article>
       </div>
+
+      {ESTIMATES.length > 0 && (
+        <ul className="admin-stats-period-note">
+          <li><b className="is-estimate">추정</b> 10/8(목) 전체 ~ 10/9(금) 오전 {ESTIMATE_SNAPSHOT_AT.slice(11)} · 기록 기능이 없던 때라 TV가 서버에 문제를 요청한 횟수 ÷ 2로 계산했어요 (실제와 조금 다를 수 있어요)</li>
+          <li><b className="is-real">실제 기록</b> 10/9(금) 오전 {ESTIMATE_SNAPSHOT_AT.slice(11)}부터 · TV 새로고침 후 게임 화면이 한 판마다 직접 남긴 기록이에요</li>
+        </ul>
+      )}
 
       <div className="admin-stats-panel">
         <h2>일자별 결과 확인 횟수</h2>
