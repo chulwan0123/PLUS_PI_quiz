@@ -274,6 +274,25 @@ export default function AdminStats({ questions }) {
         </div>
       </div>
 
+      {ESTIMATES.length > 0 && (
+        <div className="admin-stats-period" role="note" aria-label="추정 구간과 실제 기록 구간">
+          <div className="is-estimate">
+            <span>추정</span>
+            <strong>10/8(목) 하루 전체<br />+ 10/9(금) 오전 {ESTIMATE_SNAPSHOT_AT.slice(11)}까지</strong>
+            <h3>어떻게 셌나요?</h3>
+            <p>이때는 게임 기록 기능이 없었어요. 그래서 TV가 서버(Supabase)에 “문제 주세요” 하고 요청한 횟수를 셌어요.</p>
+            <p>게임 한 판마다 요청이 2번(시작할 때, 처음 화면으로 돌아갈 때) 생겨서 <b>요청 수 ÷ 2 = 판 수</b>로 계산했어요. 그래서 실제와 조금 다를 수 있어요.</p>
+          </div>
+          <div className="is-real">
+            <span>실제 기록</span>
+            <strong>10/9(금) 오전 {ESTIMATE_SNAPSHOT_AT.slice(11)}부터<br />행사 끝날 때까지</strong>
+            <h3>어떻게 셌나요?</h3>
+            <p>TV를 새로고침한 뒤부터는 게임 화면이 직접 기록을 남겨요.</p>
+            <p>‘시작하기’를 누를 때, 답을 고를 때, 결과 화면이 뜰 때마다 서버(Supabase)의 게임 기록 표에 한 줄씩 저장돼요. 그래서 <b>한 판 한 판 정확하게</b> 셀 수 있어요.</p>
+          </div>
+        </div>
+      )}
+
       <div className="admin-stats-cards">
         <article className="is-primary"><span>결과 확인</span><strong>{summary.completes.toLocaleString()}<small>회</small></strong><p>{summary.est > 0 ? `실제 기록 ${summary.realCompletes}회 + 기록 전 추정 약 ${summary.est}회` : '2문제를 모두 풀고 결과 화면까지 본 판 수'}</p></article>
         <article><span>게임 시작</span><strong>{summary.starts.toLocaleString()}<small>회</small></strong><p>완료율 {pct(summary.realCompletes, summary.realStarts)}{summary.est > 0 ? ' (실제 기록 기준)' : ''}</p></article>
@@ -311,9 +330,8 @@ export default function AdminStats({ questions }) {
         </div>
         {ESTIMATES.length > 0 && (
           <p className="admin-stats-estimate-note">
-            <strong>추정 포함</strong>: 기록 기능이 생기기 전(10/8 ~ 10/9 {ESTIMATE_SNAPSHOT_AT.slice(11)}, TV 새로고침 전) 구간은
-            Supabase 접속 기록에서 TV가 문제를 불러온 요청 수(시작·홈 이동 때 1회씩)를 2로 나눈 추정치를 결과 확인·게임 시작에 합산했습니다.
-            이 구간은 오차가 있을 수 있고, 완료율·QR·정답률·소요시간은 실제 기록만으로 계산합니다.
+            <strong>‘추정 포함’ 표시가 붙은 날짜</strong>는 기록 기능이 생기기 전(10/9 오전 {ESTIMATE_SNAPSHOT_AT.slice(11)} 이전) 추정치가 더해진 숫자예요.
+            완료율·QR 열람·정답률·소요시간은 추정할 수 없어서 실제 기록만으로 계산했어요.
           </p>
         )}
       </div>
