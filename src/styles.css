@@ -901,3 +901,8 @@ button { font: inherit; }
   .admin-stats-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-stats-split { grid-template-columns: 1fr; }
 }
+.admin-stats-table tr.is-estimate th, .admin-stats-table tr.is-estimate td { color: #6a6a6e; background: repeating-linear-gradient(135deg, #fafafa 0 6px, #f4f4f5 6px 12px); }
+.admin-stats-pill.is-estimate { margin-left: 6px; color: #7a390c; background: var(--color-orange-100); }
+.admin-stats-heat th.is-estimate { color: #a0a0a4; }
+.admin-stats-heat td.is-estimate { color: #6a6a6e; font-style: italic; }
+.admin-stats-estimate-note { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; color: #5a5a5e; background: #f8f8f9; font-size: 13px; line-height: 1.6; }

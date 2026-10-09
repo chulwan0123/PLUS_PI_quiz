@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from './supabase';
+import { ESTIMATE_SNAPSHOT_AT, estimateDays } from './statsEstimates';
 
 const KST_OFFSET = 9 * 60 * 60 * 1000;
 const PAGE = 1000;
@@ -27,6 +28,9 @@ function formatDuration(ms) {
   const s = Math.round(ms / 1000);
   return s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초` : `${s}초`;
 }
+
+const ESTIMATES = estimateDays();
+const ESTIMATE_TOTAL = ESTIMATES.reduce((s, d) => s + d.total, 0);
 
 const pct = (a, b) => (b > 0 ? `${Math.round((a / b) * 100)}%` : '-');
 
@@ -154,20 +158,27 @@ export default function AdminStats({ questions }) {
 
   const hourly = useMemo(() => {
     const doneAll = allRounds.filter((r) => r.completedAt);
-    if (!doneAll.length) return { hours: [], max: 0, cell: () => 0 };
-    const hoursUsed = doneAll.map((r) => toKst(r.completedAt).hour);
-    const minH = Math.min(9, ...hoursUsed);
-    const maxH = Math.max(19, ...hoursUsed);
     const counts = {};
     doneAll.forEach((r) => {
       const k = toKst(r.completedAt);
       const key = `${k.date}|${k.hour}`;
       counts[key] = (counts[key] || 0) + 1;
     });
+    const columns = [
+      ...ESTIMATES.map((e) => ({ key: `est-${e.date}`, label: `${dateLabel(e.date)} 추정`, estimate: true, cell: (h) => e.hours[h] || 0 })),
+      ...dates.map((date) => ({ key: date, label: dateLabel(date), estimate: false, cell: (h) => counts[`${date}|${h}`] || 0 })),
+    ];
+    const usedHours = [
+      ...doneAll.map((r) => toKst(r.completedAt).hour),
+      ...ESTIMATES.flatMap((e) => Object.keys(e.hours).map(Number)),
+    ];
+    const minH = Math.min(9, ...usedHours);
+    const maxH = Math.max(18, ...usedHours);
     const hours = [];
     for (let h = minH; h <= maxH; h += 1) hours.push(h);
-    return { hours, max: Math.max(...Object.values(counts)), cell: (date, h) => counts[`${date}|${h}`] || 0 };
-  }, [allRounds]);
+    const max = Math.max(1, ...columns.flatMap((c) => hours.map((h) => c.cell(h))));
+    return { hours, columns, max };
+  }, [allRounds, dates]);
 
   const slots = useMemo(() => {
     if (selectedDate === 'all') return [];
@@ -243,7 +254,7 @@ export default function AdminStats({ questions }) {
       </div>
 
       <div className="admin-stats-cards">
-        <article className="is-primary"><span>결과 확인</span><strong>{summary.completes.toLocaleString()}<small>회</small></strong><p>2문제를 모두 풀고 결과 화면까지 본 판 수</p></article>
+        <article className="is-primary"><span>결과 확인</span><strong>{summary.completes.toLocaleString()}<small>회</small></strong><p>2문제를 모두 풀고 결과 화면까지 본 판 수{selectedDate === 'all' && ESTIMATE_TOTAL > 0 ? ` · 기록 전 추정 약 ${ESTIMATE_TOTAL}판 별도` : ''}</p></article>
         <article><span>게임 시작</span><strong>{summary.starts.toLocaleString()}<small>회</small></strong><p>완료율 {pct(summary.completes, summary.starts)}</p></article>
         <article><span>앱 QR 열람</span><strong>{summary.qr.toLocaleString()}<small>회</small></strong><p>결과 확인 대비 {pct(summary.qr, summary.completes)}</p></article>
         <article><span>한 판 소요시간</span><strong>{formatDuration(summary.median)}</strong><p>결과 확인까지 걸린 시간(중앙값)</p></article>
@@ -257,11 +268,25 @@ export default function AdminStats({ questions }) {
           <table className="admin-stats-table">
             <thead><tr><th>날짜</th><th>오전</th><th>오후</th><th>결과 확인 합계</th><th>게임 시작</th><th>완료율</th><th>QR 열람</th></tr></thead>
             <tbody>
+              {ESTIMATES.map((e) => (
+                <tr key={`est-${e.date}`} className="is-estimate">
+                  <th>{dateLabel(e.date)} <span className="admin-stats-pill is-estimate">추정</span></th><td>약 {e.am}</td><td>약 {e.pm}</td><td><strong>약 {e.total}</strong></td><td>-</td><td>-</td><td>-</td>
+                </tr>
+              ))}
               {daily.map((d) => (
                 <tr key={d.date} className={selectedDate === d.date ? 'is-selected' : ''} onClick={() => setSelectedDate(d.date)}>
                   <th>{dateLabel(d.date)}</th><td>{d.am}</td><td>{d.pm}</td><td><strong>{d.completes}</strong></td><td>{d.starts}</td><td>{pct(d.completes, d.starts)}</td><td>{d.qr}</td>
                 </tr>
               ))}
+              {ESTIMATES.length > 0 && (
+                <tr className="is-total">
+                  <th>추정 포함 합계</th>
+                  <td>약 {ESTIMATES.reduce((s, e) => s + e.am, 0) + daily.reduce((s, d) => s + d.am, 0)}</td>
+                  <td>약 {ESTIMATES.reduce((s, e) => s + e.pm, 0) + daily.reduce((s, d) => s + d.pm, 0)}</td>
+                  <td><strong>약 {ESTIMATE_TOTAL + daily.reduce((s, d) => s + d.completes, 0)}</strong></td>
+                  <td>-</td><td>-</td><td>-</td>
+                </tr>
+              )}
               {daily.length > 1 && (
                 <tr className="is-total">
                   <th>합계</th>
@@ -277,22 +302,29 @@ export default function AdminStats({ questions }) {
             </tbody>
           </table>
         </div>
+        {ESTIMATES.length > 0 && (
+          <p className="admin-stats-estimate-note">
+            <strong>추정</strong> 행은 기록 기능이 생기기 전(10/8 ~ 10/9 {ESTIMATE_SNAPSHOT_AT.slice(11)}, TV 새로고침 전) 구간입니다.
+            Supabase 접속 기록에서 TV가 문제를 불러온 요청 수(시작·홈 이동 때 1회씩)를 2로 나눈 <strong>게임 시작 추정치</strong>로,
+            결과 확인 횟수와 정확히 같지 않고 오차가 있을 수 있습니다.
+          </p>
+        )}
       </div>
 
-      {hourly.hours.length > 0 && (
+      {hourly.columns.length > 0 && (
         <div className="admin-stats-panel">
           <h2>시간대별 결과 확인 횟수</h2>
-          <p className="admin-stats-note">진한 칸일수록 많이 참여한 시간대입니다.</p>
+          <p className="admin-stats-note">진한 칸일수록 많이 참여한 시간대입니다. ‘추정’ 열(~숫자)은 기록 전 게임 시작 추정치입니다.</p>
           <div className="admin-stats-table-wrap">
             <table className="admin-stats-table admin-stats-heat">
-              <thead><tr><th>시간</th>{dates.map((date) => <th key={date}>{dateLabel(date)}</th>)}</tr></thead>
+              <thead><tr><th>시간</th>{hourly.columns.map((c) => <th key={c.key} className={c.estimate ? 'is-estimate' : ''}>{c.label}</th>)}</tr></thead>
               <tbody>
                 {hourly.hours.map((h) => (
                   <tr key={h} className={h === 12 ? 'is-noon' : ''}>
                     <th>{String(h).padStart(2, '0')}시</th>
-                    {dates.map((date) => {
-                      const v = hourly.cell(date, h);
-                      return <td key={date} style={{ '--heat': v / hourly.max }}>{v || ''}</td>;
+                    {hourly.columns.map((c) => {
+                      const v = c.cell(h);
+                      return <td key={c.key} className={c.estimate ? 'is-estimate' : ''} style={{ '--heat': v / hourly.max }}>{v ? (c.estimate ? `~${v}` : v) : ''}</td>;
                     })}
                   </tr>
                 ))}
